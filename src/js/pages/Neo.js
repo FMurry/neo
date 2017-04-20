@@ -2,6 +2,7 @@ import React from 'react';
 import InfiniteCalendar, { Calendar, withRange,} from 'react-infinite-calendar';//https://github.com/clauderic/react-infinite-calendar
 import 'react-infinite-calendar/styles.css'; // only needs to be imported once
 import format from 'date-fns/format';
+import axios from 'axios';
 
 export default class Neo extends React.Component{
   
@@ -12,15 +13,28 @@ export default class Neo extends React.Component{
       endDate: null
     };
     this.getDate = this.getDate.bind(this);
+    this.displayNeos = this.displayNeos.bind(this);
   }
   getDate(date) {
     var startDate = format(date.start, 'YYYY-MM-DD');
     var endDate = format(date.end, 'YYYY-MM-DD');
-    console.log(this.state);
+    this.setState({
+      startDate,
+      endDate
+    });
     console.log("OnSelect Event");       
-    console.log(startDate);
-    console.log(endDate);
-  }
+    console.log(this.state);
+    this.displayNeos();
+
+   }
+   displayNeos() {
+    console.log("Display Neo event");
+    //Demo api call
+    axios.get('https://api.nasa.gov/neo/rest/v1/feed?start_date=2015-09-07&end_date=2015-09-08&api_key=DEMO_KEY')
+      .then(res => {
+        console.log(res);
+      })
+   }
 	render() {
 		var today = new Date();
 		var lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
