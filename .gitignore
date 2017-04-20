@@ -85,6 +85,3 @@ chrome-user-data
 .idea
 *.iml
 .vscode
-
-src/www/*
-src/environment.js
