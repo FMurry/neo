@@ -1,20 +1,24 @@
 import React from 'react';
+import ReactDOM from "react-dom";
 import InfiniteCalendar, { Calendar, withRange,} from 'react-infinite-calendar';//https://github.com/clauderic/react-infinite-calendar
 import 'react-infinite-calendar/styles.css'; // only needs to be imported once
 import format from 'date-fns/format';
 import axios from 'axios';
+import Alert from 'react-bootstrap';
 import {API_KEY} from '../../environment';
 
 export default class Neo extends React.Component{
   
   constructor() {
     super();
+    var today = new Date();
+    //var lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
     this.state = {
-      startRaw: null,
-      endRaw: null,
+      today: today,
       startDate: null,
       endDate: null,
-      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent egestas consectetur urna, vel gravida purus eleifend at. Vivamus vitae lectus dictum, facilisis velit vel, euismod velit. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Proin a pellentesque nunc. Mauris id lectus vitae purus facilisis dapibus sit amet at turpis. Nunc id placerat magna, vel sodales justo. Duis posuere ultricies augue a tincidunt. Cras turpis est, vestibulum non justo vitae, volutpat sodales enim. Fusce iaculis dui orci, ut cursus lectus posuere quis. Pellentesque lacinia placerat tortor, ac luctus nisi varius elementum. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Integer id viverra sem. Integer non enim pharetra, gravida tortor non, cursus leo. Curabitur vel lacus et neque consequat euismod sit amet sit amet lacus."
+      text: "Select and drag on calendar for date range. Then click search",
+      error: null,
     };
     this.getDate = this.getDate.bind(this);
     this.displayNeos = this.displayNeos.bind(this);
@@ -48,11 +52,16 @@ export default class Neo extends React.Component{
     if(!(this.state.startRaw) || !(this.state.endRaw)){
       //Dates not selected
       console.log("Date not verified");
+      this.setState({
+        error: "Please select a date range"
+      })
+
     }
     else{
       //Verify here
       console.log("Date verified");
     }
+    console.log(this.state);
    }
    displayNeos() {
     console.log("Display Neo event");
@@ -64,12 +73,12 @@ export default class Neo extends React.Component{
       })
    }
 	render() {
-		var today = new Date();
-		var lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
-    var help = "Select up to 7 days in the calendar";
     var mySelf = this;
+    var help = "Select up to 7 days in the calendar";
 		return(
 			<div>
+        <div id='alert'>
+        </div>
         <div class="col-md-6 col-md-offset-3">
           <h2>Near Earth Objects</h2>
         </div>
@@ -79,7 +88,7 @@ export default class Neo extends React.Component{
         <div class="col-md-6 col-md-offset-3">
              <InfiniteCalendar
                 Component={withRange(Calendar)}
-                maxDate= {today}
+                maxDate= {mySelf.state.today}
                 width={(window.innerWidth <= 650) ? window.innerWidth : 650}
                 height={window.innerHeight - 250}
                 rowHeight={70}
@@ -89,7 +98,7 @@ export default class Neo extends React.Component{
                       if(date.eventType === 3){
                         mySelf.getDate(date);
                       }
-                    }, 2200);
+                    }, 500);
                   }
 
                     
@@ -100,12 +109,15 @@ export default class Neo extends React.Component{
                   showHeader: false
                 }}
               selected={{
-                  start: lastWeek,
-                  end: today,
+                  start: mySelf.state.startDate,
+                  end: mySelf.state.endDate,
               }}
               />
             </div>
-            <button type="button" class="btn btn-primary" onClick={() => {this.verifyDate()}}>Search</button>
+            <div class="col-md-3 col-md-offset-3">
+              <button type="button" class="btn btn-primary" onClick={() => {this.verifyDate()}}>Search</button>
+            </div>
+            
         		<div class="col-md-10 col-md-offset-1">
         			<div class="panel panel-default">
         				<div class="panel-heading">Near Earth Objects!</div>
