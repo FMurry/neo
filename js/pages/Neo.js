@@ -5,7 +5,7 @@ import 'react-infinite-calendar/styles.css'; // only needs to be imported once
 import format from 'date-fns/format';
 import axios from 'axios';
 import Alert from 'react-bootstrap';
-import {API_KEY} from '../../environment';
+const API_KEY = "Vu3jrnHpif6GXfdP1DtWSQdlWbeJ6mRaEWIvwPWN"; //Do not abuse
 
 export default class Neo extends React.Component{
   
