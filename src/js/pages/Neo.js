@@ -4,7 +4,7 @@ import InfiniteCalendar, { Calendar, withRange,} from 'react-infinite-calendar';
 import 'react-infinite-calendar/styles.css'; // only needs to be imported once
 import format from 'date-fns/format';
 import axios from 'axios';
-import {Alert, Table} from 'react-bootstrap';
+import {Alert, Table, Panel} from 'react-bootstrap';
 const API_KEY = "Vu3jrnHpif6GXfdP1DtWSQdlWbeJ6mRaEWIvwPWN"; //Do not abuse
 
 export default class Neo extends React.Component{
@@ -14,6 +14,7 @@ export default class Neo extends React.Component{
     var today = new Date();
     //var lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
     this.state = {
+      panelTitle: "Near Earth Objects!",
       today: today,
       startDate: null,
       endDate: null,
@@ -63,7 +64,8 @@ export default class Neo extends React.Component{
     else{
       //Verify here
       this.setState({
-        text: "Searching......"
+        panelTitle: "Near Earth Objects!",
+        text: "Searching Please Wait......"
       })
       this.getNeos();
     }
@@ -100,6 +102,7 @@ export default class Neo extends React.Component{
         var tableBody = React.createElement("tbody",null,content);
         var table = React.createElement(Table,{"responsive":true, "striped":true, "bordered":true, "condensed":true, "hover":true},[tableHeaders, tableBody]);
         mySelf.setState({
+          panelTitle: "Near Earth objects between "+format(mySelf.state.startRaw,"MMM, DD, YYYY")+" to "+format(mySelf.state.endRaw,"MMM, DD, YYYY"),
           text: table
         });
       })
@@ -154,10 +157,9 @@ export default class Neo extends React.Component{
             </div>
             
         		<div class="col-md-10 col-md-offset-1">
-        			<div class="panel panel-default">
-        				<div class="panel-heading">Near Earth Objects!</div>
+        			<Panel header={this.state.panelTitle}>
                 {this.state.text}
-        			</div>
+        			</Panel>
         		</div>
         	</div>
 			);
