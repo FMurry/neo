@@ -4,7 +4,7 @@ import InfiniteCalendar, { Calendar, withRange,} from 'react-infinite-calendar';
 import 'react-infinite-calendar/styles.css'; // only needs to be imported once
 import format from 'date-fns/format';
 import axios from 'axios';
-import {Alert, Table} from 'react-bootstrap';
+import {Alert, Button, Panel, Table} from 'react-bootstrap';
 const API_KEY = "Vu3jrnHpif6GXfdP1DtWSQdlWbeJ6mRaEWIvwPWN"; //Do not abuse
 
 export default class Neo extends React.Component{
@@ -14,15 +14,20 @@ export default class Neo extends React.Component{
     var today = new Date();
     //var lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
     this.state = {
+      panelTitle: "Near Earth Objects!",
       today: today,
       startDate: null,
       endDate: null,
-      text: "Select and drag on calendar for date range. Then click search",
+      text: "Select range on calendar by clicking on start date, then clicking on end date. Range must be 1 week",
+      isLoading: false,
+      buttonText: "Search",
       error: null,
+      alertVisible: false,
     };
     this.getDate = this.getDate.bind(this);
     this.getNeos = this.getNeos.bind(this);
     this.verifyDate = this.verifyDate.bind(this);
+    this.dismissAlert = this.dismissAlert.bind(this);
   }
   getDate(date) {
     var startDate = format(date.start, 'YYYY-MM-DD');
@@ -43,35 +48,40 @@ export default class Neo extends React.Component{
       startDate,
       endDate
     });
-    console.log("OnSelect Event");       
-    console.log(this.state);
    }
 
    verifyDate() {
-    console.log("Verifying date....");
     if(!(this.state.startRaw) || !(this.state.endRaw)){
       //Dates not selected
       console.log("Date not verified");
       this.setState({
-        error: "Please select a date range"
+        error: "Please select a date range",
+        alertVisible: true
       })
       return;
 
     }
     var timeDifference = Math.abs(this.state.endRaw.getTime() - this.state.startRaw.getTime());
     var numOfDays = Math.ceil(timeDifference / (1000 * 3600 * 24)); 
-    if(numOfDays < 7){
-      console.log("Choose greater than 7 days");
+    if(numOfDays < 7 || numOfDays > 7){
+      console.log("7 days only");
+      this.setState({
+        error: "Choose only 7 days",
+        alertVisible: true
+      })
     }
     else{
       //Verify here
-      console.log("Date verified");
       this.setState({
-        text: "Searching......"
+        panelTitle: "Near Earth Objects!",
+        text: "Searching Please Wait......",
+        isLoading:true,
+        buttonText: "Loading",
+        error: null,
+        alertVisible: false,
       })
       this.getNeos();
     }
-    console.log(this.state);
    }
    getNeos() {
     console.log("Display Neo event");
@@ -83,36 +93,68 @@ export default class Neo extends React.Component{
     //https://api.nasa.gov/neo/rest/v1/feed?start_date=2015-09-07&end_date=2015-09-08&api_key=DEMO_KEY
     axios.get(`https://api.nasa.gov/neo/rest/v1/feed?start_date=${this.state.startDate}&end_date=${this.state.endDate}&api_key=${API_KEY}`)
       .then(res => {
+        console.log(res);
         for(var day in res.data.near_earth_objects){
           for(var neo in res.data.near_earth_objects[day]){
-            console.log(day.toString());
             var name = React.createElement('td',null,res.data.near_earth_objects[day][neo].name);
             var hazardous = React.createElement('td',null,res.data.near_earth_objects[day][neo].is_potentially_hazardous_asteroid.toString());
-            content.push(React.createElement("tr",null,[day,name, hazardous]));
+            var minDiameter = React.createElement('td',null,res.data.near_earth_objects[day][neo].estimated_diameter.meters.estimated_diameter_min);
+            var maxDiameter = React.createElement('td',null,res.data.near_earth_objects[day][neo].estimated_diameter.meters.estimated_diameter_max);
+            var relativeVelocity = React.createElement('td',null, res.data.near_earth_objects[day][neo].close_approach_data[0].relative_velocity.kilometers_per_hour);
+            content.push(React.createElement("tr",null,[day,name, hazardous,minDiameter,maxDiameter,relativeVelocity]));
           }
         }
         var tableHeaders = React.createElement("thead",null,
           React.createElement("tr",null,[
             React.createElement("th",null,"Date"),
             React.createElement("th",null,"Name"), 
-            React.createElement("th",null,"Hazardous?")]));
+            React.createElement("th",null,"Hazardous?"),
+            React.createElement("th",null,"Minimum Diameter (m)"),
+            React.createElement("th",null,"Maximum Diameter (m)"),
+            React.createElement("th",null,"Relative Velocity (km/h")]));
         var tableBody = React.createElement("tbody",null,content);
         var table = React.createElement(Table,{"responsive":true, "striped":true, "bordered":true, "condensed":true, "hover":true},[tableHeaders, tableBody]);
         mySelf.setState({
-          text: table
+          panelTitle: "Near Earth objects between "+format(mySelf.state.startRaw,"MMM, DD, YYYY")+" to "+format(mySelf.state.endRaw,"MMM, DD, YYYY"),
+          text: table,
+          isLoading: false,
+          buttonText: "Search",
         });
       })
+      .catch( err => {
+        console.log(err);
+        mySelf.setState({
+          isLoading: false,
+          buttonText: "Search",
+          error: "API error... Please try again later",
+          alertVisible: true,
+
+        });
+      });
    }
+
+  dismissAlert() {
+    this.setState({
+      error: null,
+      alertVisible: false,
+    })
+  }
 	render() {
     var mySelf = this;
-    var help = "Select up to 7 days in the calendar";
+    var help = "Please select 7 days in the calendar";
+    var alert = null;
+    if(this.state.error){
+      alert = <div class="col-md-12">
+            <Alert bsStyle="danger">
+              <h4>We encountered an error</h4>
+              <p>{this.state.error}</p>
+              <p><Button onClick={() => {this.dismissAlert()}}>Close</Button></p>
+            </Alert>
+            </div>;
+    }
 		return(
 			<div>
-        <div id='alert'>
-        </div>
-        <div class="col-md-6 col-md-offset-3">
-          <h2>Near Earth Objects</h2>
-        </div>
+        <h2>Near Earth Objects</h2>
         <div class="col-md-6 col-md-offset-3">
           {help}
         </div>
@@ -146,14 +188,14 @@ export default class Neo extends React.Component{
               />
             </div>
             <div class="col-md-3 col-md-offset-3">
-              <button type="button" class="btn btn-primary" onClick={() => {this.verifyDate()}}>Search</button>
+            <Button bsStyle="primary" disabled={this.state.isLoading} onClick={() => {this.verifyDate()}}>{this.state.buttonText}</Button>
             </div>
+            {alert}
             
         		<div class="col-md-10 col-md-offset-1">
-        			<div class="panel panel-default">
-        				<div class="panel-heading">Near Earth Objects!</div>
+        			<Panel header={this.state.panelTitle}>
                 {this.state.text}
-        			</div>
+        			</Panel>
         		</div>
         	</div>
 			);
