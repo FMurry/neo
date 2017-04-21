@@ -18,14 +18,16 @@ export default class Neo extends React.Component{
       today: today,
       startDate: null,
       endDate: null,
-      text: "Select and drag on calendar for date range. Then click search",
+      text: "Select range on calendar by clicking on start date, then clicking on end date. Range must be 1 week",
       isLoading: false,
       buttonText: "Search",
       error: null,
+      alertVisible: false,
     };
     this.getDate = this.getDate.bind(this);
     this.getNeos = this.getNeos.bind(this);
     this.verifyDate = this.verifyDate.bind(this);
+    this.dismissAlert = this.dismissAlert.bind(this);
   }
   getDate(date) {
     var startDate = format(date.start, 'YYYY-MM-DD');
@@ -53,7 +55,8 @@ export default class Neo extends React.Component{
       //Dates not selected
       console.log("Date not verified");
       this.setState({
-        error: "Please select a date range"
+        error: "Please select a date range",
+        alertVisible: true
       })
       return;
 
@@ -62,6 +65,10 @@ export default class Neo extends React.Component{
     var numOfDays = Math.ceil(timeDifference / (1000 * 3600 * 24)); 
     if(numOfDays < 7 || numOfDays > 7){
       console.log("7 days only");
+      this.setState({
+        error: "Choose only 7 days",
+        alertVisible: true
+      })
     }
     else{
       //Verify here
@@ -70,6 +77,8 @@ export default class Neo extends React.Component{
         text: "Searching Please Wait......",
         isLoading:true,
         buttonText: "Loading",
+        error: null,
+        alertVisible: false,
       })
       this.getNeos();
     }
@@ -117,16 +126,34 @@ export default class Neo extends React.Component{
         mySelf.setState({
           isLoading: false,
           buttonText: "Search",
+          error: "API error... Please try again later",
+          alertVisible: true,
+
         });
       });
    }
+
+  dismissAlert() {
+    this.setState({
+      error: null,
+      alertVisible: false,
+    })
+  }
 	render() {
     var mySelf = this;
     var help = "Please select 7 days in the calendar";
+    var alert = null;
+    if(this.state.error){
+      alert = <div class="col-md-12">
+            <Alert bsStyle="danger">
+              <h4>We encountered an error</h4>
+              <p>{this.state.error}</p>
+              <p><Button onClick={() => {this.dismissAlert()}}>Close</Button></p>
+            </Alert>
+            </div>;
+    }
 		return(
 			<div>
-        <div id='alert'>
-        </div>
         <h2>Near Earth Objects</h2>
         <div class="col-md-6 col-md-offset-3">
           {help}
@@ -163,6 +190,7 @@ export default class Neo extends React.Component{
             <div class="col-md-3 col-md-offset-3">
             <Button bsStyle="primary" disabled={this.state.isLoading} onClick={() => {this.verifyDate()}}>{this.state.buttonText}</Button>
             </div>
+            {alert}
             
         		<div class="col-md-10 col-md-offset-1">
         			<Panel header={this.state.panelTitle}>
