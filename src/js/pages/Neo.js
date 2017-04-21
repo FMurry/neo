@@ -4,7 +4,7 @@ import InfiniteCalendar, { Calendar, withRange,} from 'react-infinite-calendar';
 import 'react-infinite-calendar/styles.css'; // only needs to be imported once
 import format from 'date-fns/format';
 import axios from 'axios';
-import {Alert, Table, Panel} from 'react-bootstrap';
+import {Alert, Button, Panel, Table} from 'react-bootstrap';
 const API_KEY = "Vu3jrnHpif6GXfdP1DtWSQdlWbeJ6mRaEWIvwPWN"; //Do not abuse
 
 export default class Neo extends React.Component{
@@ -19,6 +19,8 @@ export default class Neo extends React.Component{
       startDate: null,
       endDate: null,
       text: "Select and drag on calendar for date range. Then click search",
+      isLoading: false,
+      buttonText: "Search",
       error: null,
     };
     this.getDate = this.getDate.bind(this);
@@ -65,7 +67,9 @@ export default class Neo extends React.Component{
       //Verify here
       this.setState({
         panelTitle: "Near Earth Objects!",
-        text: "Searching Please Wait......"
+        text: "Searching Please Wait......",
+        isLoading:true,
+        buttonText: "Loading",
       })
       this.getNeos();
     }
@@ -103,11 +107,17 @@ export default class Neo extends React.Component{
         var table = React.createElement(Table,{"responsive":true, "striped":true, "bordered":true, "condensed":true, "hover":true},[tableHeaders, tableBody]);
         mySelf.setState({
           panelTitle: "Near Earth objects between "+format(mySelf.state.startRaw,"MMM, DD, YYYY")+" to "+format(mySelf.state.endRaw,"MMM, DD, YYYY"),
-          text: table
+          text: table,
+          isLoading: false,
+          buttonText: "Search",
         });
       })
       .catch( err => {
         console.log(err);
+        mySelf.setState({
+          isLoading: false,
+          buttonText: "Search",
+        });
       });
    }
 	render() {
@@ -117,9 +127,7 @@ export default class Neo extends React.Component{
 			<div>
         <div id='alert'>
         </div>
-        <div class="col-md-6 col-md-offset-3">
-          <h2>Near Earth Objects</h2>
-        </div>
+        <h2>Near Earth Objects</h2>
         <div class="col-md-6 col-md-offset-3">
           {help}
         </div>
@@ -153,7 +161,7 @@ export default class Neo extends React.Component{
               />
             </div>
             <div class="col-md-3 col-md-offset-3">
-              <button type="button" class="btn btn-primary" onClick={() => {this.verifyDate()}}>Search</button>
+            <Button bsStyle="primary" disabled={this.state.isLoading} onClick={() => {this.verifyDate()}}>{this.state.buttonText}</Button>
             </div>
             
         		<div class="col-md-10 col-md-offset-1">
