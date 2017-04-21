@@ -4,7 +4,7 @@ import InfiniteCalendar, { Calendar, withRange,} from 'react-infinite-calendar';
 import 'react-infinite-calendar/styles.css'; // only needs to be imported once
 import format from 'date-fns/format';
 import axios from 'axios';
-import Alert from 'react-bootstrap';
+import {Alert, Table} from 'react-bootstrap';
 const API_KEY = "Vu3jrnHpif6GXfdP1DtWSQdlWbeJ6mRaEWIvwPWN"; //Do not abuse
 
 export default class Neo extends React.Component{
@@ -21,7 +21,7 @@ export default class Neo extends React.Component{
       error: null,
     };
     this.getDate = this.getDate.bind(this);
-    this.displayNeos = this.displayNeos.bind(this);
+    this.getNeos = this.getNeos.bind(this);
     this.verifyDate = this.verifyDate.bind(this);
   }
   getDate(date) {
@@ -55,21 +55,52 @@ export default class Neo extends React.Component{
       this.setState({
         error: "Please select a date range"
       })
+      return;
 
+    }
+    var timeDifference = Math.abs(this.state.endRaw.getTime() - this.state.startRaw.getTime());
+    var numOfDays = Math.ceil(timeDifference / (1000 * 3600 * 24)); 
+    if(numOfDays < 7){
+      console.log("Choose greater than 7 days");
     }
     else{
       //Verify here
       console.log("Date verified");
+      this.setState({
+        text: "Searching......"
+      })
+      this.getNeos();
     }
     console.log(this.state);
    }
-   displayNeos() {
+   getNeos() {
     console.log("Display Neo event");
+    var mySelf = this;
+    var responseTable;
+    var content = [];
+    var rows = [];
     //Demo api call
     //https://api.nasa.gov/neo/rest/v1/feed?start_date=2015-09-07&end_date=2015-09-08&api_key=DEMO_KEY
     axios.get(`https://api.nasa.gov/neo/rest/v1/feed?start_date=${this.state.startDate}&end_date=${this.state.endDate}&api_key=${API_KEY}`)
       .then(res => {
-        console.log(res);
+        for(var day in res.data.near_earth_objects){
+          for(var neo in res.data.near_earth_objects[day]){
+            console.log(day.toString());
+            var name = React.createElement('td',null,res.data.near_earth_objects[day][neo].name);
+            var hazardous = React.createElement('td',null,res.data.near_earth_objects[day][neo].is_potentially_hazardous_asteroid.toString());
+            content.push(React.createElement("tr",null,[day,name, hazardous]));
+          }
+        }
+        var tableHeaders = React.createElement("thead",null,
+          React.createElement("tr",null,[
+            React.createElement("th",null,"Date"),
+            React.createElement("th",null,"Name"), 
+            React.createElement("th",null,"Hazardous?")]));
+        var tableBody = React.createElement("tbody",null,content);
+        var table = React.createElement(Table,{"responsive":true, "striped":true, "bordered":true, "condensed":true, "hover":true},[tableHeaders, tableBody]);
+        mySelf.setState({
+          text: table
+        });
       })
    }
 	render() {
