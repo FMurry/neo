@@ -4,7 +4,7 @@ import InfiniteCalendar, { Calendar, withRange,} from 'react-infinite-calendar';
 import 'react-infinite-calendar/styles.css'; // only needs to be imported once
 import format from 'date-fns/format';
 import axios from 'axios';
-import {Alert, Button, Panel, Table} from 'react-bootstrap';
+import {Alert, Button, Glyphicon, Panel, Table} from 'react-bootstrap';
 const API_KEY = "Vu3jrnHpif6GXfdP1DtWSQdlWbeJ6mRaEWIvwPWN"; //Do not abuse
 
 export default class Neo extends React.Component{
@@ -23,6 +23,7 @@ export default class Neo extends React.Component{
       buttonText: "Search",
       error: null,
       alertVisible: false,
+      escapeVelocity: 40270
     };
     this.getDate = this.getDate.bind(this);
     this.getNeos = this.getNeos.bind(this);
@@ -111,7 +112,7 @@ export default class Neo extends React.Component{
             React.createElement("th",null,"Hazardous?"),
             React.createElement("th",null,"Minimum Diameter (m)"),
             React.createElement("th",null,"Maximum Diameter (m)"),
-            React.createElement("th",null,"Relative Velocity (km/h")]));
+            React.createElement("th",null,"Relative Velocity (km/h)")]));
         var tableBody = React.createElement("tbody",null,content);
         var table = React.createElement(Table,{"responsive":true, "striped":true, "bordered":true, "condensed":true, "hover":true},[tableHeaders, tableBody]);
         mySelf.setState({
@@ -155,10 +156,10 @@ export default class Neo extends React.Component{
 		return(
 			<div>
         <h2>Near Earth Objects</h2>
-        <div class="col-md-6 col-md-offset-3">
+        <div class="col-md-6 col-md-offset-4">
           {help}
         </div>
-        <div class="col-md-6 col-md-offset-3">
+        <div class="col-md-6 col-md-offset-2">
              <InfiniteCalendar
                 Component={withRange(Calendar)}
                 maxDate= {mySelf.state.today}
@@ -188,12 +189,12 @@ export default class Neo extends React.Component{
               />
             </div>
             <div class="col-md-3 col-md-offset-3">
-            <Button bsStyle="primary" disabled={this.state.isLoading} onClick={() => {this.verifyDate()}}>{this.state.buttonText}</Button>
+            <Button bsStyle="primary" disabled={this.state.isLoading} onClick={() => {this.verifyDate()}}><Glyphicon glyph="search"/> {this.state.buttonText}</Button>
             </div>
             {alert}
             
         		<div class="col-md-10 col-md-offset-1">
-        			<Panel header={this.state.panelTitle}>
+        			<Panel header={this.state.panelTitle} footer={`Earth's escape velocity estimated at surface: ${this.state.escapeVelocity} km/h`}>
                 {this.state.text}
         			</Panel>
         		</div>
