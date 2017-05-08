@@ -30,7 +30,6 @@ export default class Layout extends React.Component{
 
             </div>
           </div>
-          <Footer/>
         </div>
       </div>
 
