@@ -99,10 +99,15 @@ export default class Neo extends React.Component{
           for(var neo in res.data.near_earth_objects[day]){
             var name = React.createElement('td',null,res.data.near_earth_objects[day][neo].name);
             var hazardous = React.createElement('td',null,res.data.near_earth_objects[day][neo].is_potentially_hazardous_asteroid.toString());
-            var minDiameter = React.createElement('td',null,res.data.near_earth_objects[day][neo].estimated_diameter.meters.estimated_diameter_min);
-            var maxDiameter = React.createElement('td',null,res.data.near_earth_objects[day][neo].estimated_diameter.meters.estimated_diameter_max);
+            var average = (res.data.near_earth_objects[day][neo].estimated_diameter.meters.estimated_diameter_max+res.data.near_earth_objects[day][neo].estimated_diameter.meters.estimated_diameter_min)/2;
+            var averageDiameter = React.createElement('td',null,average);
+            //var minDiameter = React.createElement('td',null,res.data.near_earth_objects[day][neo].estimated_diameter.meters.estimated_diameter_min);
+            //var maxDiameter = React.createElement('td',null,res.data.near_earth_objects[day][neo].estimated_diameter.meters.estimated_diameter_max);
             var relativeVelocity = React.createElement('td',null, res.data.near_earth_objects[day][neo].close_approach_data[0].relative_velocity.kilometers_per_hour);
-            content.push(React.createElement("tr",null,[day,name, hazardous,minDiameter,maxDiameter,relativeVelocity]));
+            var lunarDistance = React.createElement('td',null,res.data.near_earth_objects[day][neo].close_approach_data[0].miss_distance.lunar);
+            var astroDistance = React.createElement('td',null,res.data.near_earth_objects[day][neo].close_approach_data[0].miss_distance.astronomical);
+            var absoluteMagnitude = React.createElement('td',null,res.data.near_earth_objects[day][neo].absolute_magnitude_h);
+            content.push(React.createElement("tr",null,[day,name, hazardous, averageDiameter, relativeVelocity, lunarDistance, astroDistance, absoluteMagnitude]));
           }
         }
         var tableHeaders = React.createElement("thead",null,
@@ -110,9 +115,11 @@ export default class Neo extends React.Component{
             React.createElement("th",null,"Date"),
             React.createElement("th",null,"Name"), 
             React.createElement("th",null,"Hazardous?"),
-            React.createElement("th",null,"Minimum Diameter (m)"),
-            React.createElement("th",null,"Maximum Diameter (m)"),
-            React.createElement("th",null,"Relative Velocity (km/h)")]));
+            React.createElement("th",null,"Estimated Diameter (m)"),
+            React.createElement("th",null,"Relative Velocity (km/h)"),
+            React.createElement("th",null,"Miss Distance (Lunar Distance)"),
+            React.createElement("th",null,"Miss Distance (Astronomical units)"),
+            React.createElement("th",null,"Absolute Magnitude")]));
         var tableBody = React.createElement("tbody",null,content);
         var table = React.createElement(Table,{"responsive":true, "striped":true, "bordered":true, "condensed":true, "hover":true},[tableHeaders, tableBody]);
         mySelf.setState({
